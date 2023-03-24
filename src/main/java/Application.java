@@ -25,6 +25,9 @@ public class Application {
             System.setOut(stdout);
 
             System.out.println("Программа успешно сгенерировала отчёты в папку reports");
+
+            fileReader.close();
+            reader.close();
         } catch (FileNotFoundException e) {
             System.out.println("Указанный входной/выходной файл не найден");
         } catch (IOException e) {
