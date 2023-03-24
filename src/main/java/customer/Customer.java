@@ -1,6 +1,7 @@
 package customer;
 
 import comparator.CustomComparator;
+import comparator.DateComparator;
 
 import java.util.*;
 
@@ -16,10 +17,16 @@ public class Customer {
 
     public void addData(String callType, String startTime, String endTime, Long duration, double cost) {
         calls.add(new Call(callType, startTime, endTime, duration, cost));
-        calls.sort(new CustomComparator());
+        calls.sort(new DateComparator());
     }
 
     public void printData(String phoneNumber) {
+        for (Call call : calls) {
+            long duration = call.getDurationInMs();
+            call.setCost(calculateCost(call.getCallType(), duration));
+        }
+        calls.sort(new CustomComparator());
+
         int bound = 78;
         System.out.println("Tariff index: " + tariff);
         for (int i = 0; i < bound; i++) System.out.print("-");
@@ -33,7 +40,6 @@ public class Customer {
 
         for (Call call : calls) {
             long duration = call.getDurationInMs();
-            call.setCost(calculateCost(call.getCallType(), duration));
             long diffSeconds = duration / 1000 % 60;
             long diffMinutes = duration / (60 * 1000) % 60;
             long diffHours = duration / (60 * 60 * 1000);
