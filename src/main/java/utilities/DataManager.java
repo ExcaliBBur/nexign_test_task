@@ -1,11 +1,15 @@
 package utilities;
 
+import comparator.CustomComparator;
+import customer.Call;
 import customer.Customer;
 
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.PrintStream;
+import java.io.PrintWriter;
 import java.util.HashMap;
+import java.util.List;
 
 public class DataManager {
     private final HashMap<String, Customer> customerHashMap = new HashMap<>();
@@ -34,13 +38,58 @@ public class DataManager {
     }
 
     public void generateReports() throws FileNotFoundException {
-        PrintStream out;
+        PrintWriter out;
         Customer customer;
         for (String phoneNumber : customerHashMap.keySet()) {
-            out = new PrintStream(new FileOutputStream("reports/" + phoneNumber + ".txt"));
-            System.setOut(out);
+            out = new PrintWriter(new FileOutputStream("reports/" + phoneNumber + ".txt"));
             customer = customerHashMap.get(phoneNumber);
-            customer.printData(phoneNumber);
+            List<Call> calls = customer.getCalls();
+            String tariff = customer.getTariff();
+
+            // Сначала считаем стоимость для звонков, отсортированных по календарю
+            for (Call call : calls) {
+                long duration = call.getDurationInMs();
+                call.setCost(customer.calculateCost(call.getCallType(), duration));
+            }
+            // Сортируем по типу звонка и остальным параметрам
+            calls.sort(new CustomComparator());
+
+            out.println("Tariff index: " + tariff);
+            printLine(out);
+            out.println("\nReport for phone number " + phoneNumber + ":");
+            printLine(out);
+            out.printf("\n|%-10s|%-21s|%-21s|%-11s|%-9s|\n",
+                    "Call type", "     Start time", "      End time", "  Duration", "   Cost");
+            printLine(out);
+
+
+            double totalCost = 0;
+
+            for (Call call : calls) {
+                long duration = call.getDurationInMs();
+                long diffSeconds = duration / 1000 % 60;
+                long diffMinutes = duration / (60 * 1000) % 60;
+                long diffHours = duration / (60 * 60 * 1000);
+                out.printf("\n|%-10s|%-21s|%-21s| %02d:%02d:%02d %1s|%-9s|", "    " + call.getCallType(),
+                        " " + call.getStartTime(), " " + call.getEndTime()
+                        , diffHours, diffMinutes, diffSeconds, "", "   " + call.getCost());
+                totalCost += call.getCost();
+            }
+
+            out.println();
+            printLine(out);
+
+            // Для безлимитного тарифа минимальная цена - 100
+            if (tariff.equals("06")) totalCost += 100;
+
+            out.printf("\n|%52s: |%20s |\n", "Total Cost", totalCost + " rubles");
+            printLine(out);
+            out.flush();
         }
+    }
+
+    private void printLine(PrintWriter out) {
+        int bound = 78;
+        for (int i = 0; i < bound; i++) out.print("-");
     }
 }
