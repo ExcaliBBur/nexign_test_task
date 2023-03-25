@@ -6,15 +6,22 @@ import customer.Customer;
 
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
-import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.util.HashMap;
 import java.util.List;
 
+
+/**
+ * Class to manage data
+ */
 public class DataManager {
     private final HashMap<String, Customer> customerHashMap = new HashMap<>();
     private final DateFormatter dateFormatter = new DateFormatter();
 
+    /**
+     * Method for parsing data from input line and save in map
+     * @param line input line
+     */
     public void readData(String line) {
         String[] data = line.split(",");
         String callType = data[0].trim();
@@ -37,6 +44,11 @@ public class DataManager {
         customerHashMap.put(phoneNumber, customer);
     }
 
+    /**
+     * Method for generating reports in reports/ directory
+     * Also this method calculate cost for one call
+     * @throws FileNotFoundException if reports/ directory not found
+     */
     public void generateReports() throws FileNotFoundException {
         PrintWriter out;
         Customer customer;
@@ -46,12 +58,10 @@ public class DataManager {
             List<Call> calls = customer.getCalls();
             String tariff = customer.getTariff();
 
-            // Сначала считаем стоимость для звонков, отсортированных по календарю
             for (Call call : calls) {
                 long duration = call.getDurationInMs();
                 call.setCost(customer.calculateCost(call.getCallType(), duration));
             }
-            // Сортируем по типу звонка и остальным параметрам
             calls.sort(new CustomComparator());
 
             out.println("Tariff index: " + tariff);
@@ -79,7 +89,6 @@ public class DataManager {
             out.println();
             printLine(out);
 
-            // Для безлимитного тарифа минимальная цена - 100
             if (tariff.equals("06")) totalCost += 100;
 
             out.printf("\n|%52s: |%20s |\n", "Total Cost", totalCost + " rubles");
@@ -88,6 +97,10 @@ public class DataManager {
         }
     }
 
+    /**
+     * Method for printing separator line
+     * @param out file to print
+     */
     private void printLine(PrintWriter out) {
         int bound = 78;
         for (int i = 0; i < bound; i++) out.print("-");

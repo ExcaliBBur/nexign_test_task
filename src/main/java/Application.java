@@ -2,6 +2,9 @@ import utilities.DataManager;
 
 import java.io.*;
 
+/**
+ * Class to run Application
+ */
 public class Application {
     public static void main(String[] args) {
         DataManager dataManager = new DataManager();

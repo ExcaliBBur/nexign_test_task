@@ -4,7 +4,17 @@ import customer.Call;
 
 import java.util.Comparator;
 
+/**
+ * Custom comparator
+ */
 public class DateComparator implements Comparator<Call> {
+    /**
+     * The comparison is by calendar order, then by duration, then by cost
+     * @param call1 first call to compare
+     * @param call2 second call to compare
+     * @return call coming first in calendar order
+     * If the call start time is the same, then the comparison is based on other parameters
+     */
     @Override
     public int compare(Call call1, Call call2) {
         if (!call1.getStartTime().equals(call2.getStartTime()))
